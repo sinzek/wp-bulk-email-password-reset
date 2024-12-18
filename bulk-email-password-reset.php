@@ -4,6 +4,10 @@ Plugin Name: Bulk Email Password Reset
 Description: Allows mass sending of password reset emails with real-time logging. Utilizes https://github.com/deliciousbrains/wp-background-processing
 Version: 1.5
 Author: Chase Brock
+Author URI: https://github.com/sinzek/wp-bulk-email-password-reset
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: bulk-email-password-reset
 */
 
 // Prevent direct file access
