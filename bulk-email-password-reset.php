@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: Mass Password Reset
-Description: Allows mass sending of password reset emails with real-time logging
-Version: 1.3
+Plugin Name: Bulk Email Password Reset
+Description: Allows mass sending of password reset emails with real-time logging. Utilizes https://github.com/deliciousbrains/wp-background-processing
+Version: 1.5
 Author: Chase Brock
 */
 
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Include the background processing class
-require_once plugin_dir_path(__FILE__) . 'class-mass-password-reset-process.php';
+require_once plugin_dir_path(__FILE__) . 'class-bulk-email-password-reset-process.php';
 
 // Transient to store log messages
 function mpwr_add_log_message($message) {
