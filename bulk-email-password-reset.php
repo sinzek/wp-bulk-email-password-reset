@@ -10,39 +10,39 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: bulk-email-password-reset
 */
 
-// Prevent direct file access
+// prevent direct file access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Include the background processing class
+// include the background processing class
 require_once plugin_dir_path(__FILE__) . 'class-bulk-email-password-reset-process.php';
 
-// Transient to store log messages
+// transient to store log messages
 function mpwr_add_log_message($message) {
     $logs = get_transient('mpwr_reset_logs') ?: [];
     $logs[] = date('[H:i:s] ') . $message;
     
-    // Limit log size to prevent memory issues
+    // limit log size to prevent memory issues
     $logs = array_slice($logs, -100);
     
     set_transient('mpwr_reset_logs', $logs, DAY_IN_SECONDS);
 }
 
-// Debug logging function
+// debug logging function
 function mpwr_debug_log($message) {
     error_log('MASS PASSWORD RESET: ' . $message);
     mpwr_add_log_message($message);
 }
 
-// Initialize the plugin
+// initialize the plugin
 function mpwr_init() {
     global $mass_reset_processor;
     $mass_reset_processor = new Mass_Password_Reset_Process();
 }
 add_action('plugins_loaded', 'mpwr_init');
 
-// Add admin menu
+// add admin menu
 function mpwr_add_admin_menu() {
     add_management_page(
         'Mass Password Reset', 
@@ -56,7 +56,7 @@ add_action('admin_menu', 'mpwr_add_admin_menu');
 
 // AJAX handler to fetch logs
 function mpwr_fetch_logs() {
-    // Verify nonce and user capabilities
+    // verify nonce and user capabilities
     check_ajax_referer('mpwr_fetch_logs', 'nonce');
     
     if (!current_user_can('manage_options')) {
@@ -69,44 +69,43 @@ function mpwr_fetch_logs() {
 }
 add_action('wp_ajax_mpwr_fetch_logs', 'mpwr_fetch_logs');
 
-// Admin page handler
-// Admin page handler
+// admin page handler
 function mpwr_display_reset_page() {
     global $mass_reset_processor;
 
-    // Check user capabilities
+    // check user capabilities
     if (!current_user_can('manage_options')) {
         return;
     }
 
-    // Handle form submission
+    // handle form submission
     if (isset($_POST['confirm_mass_reset'])) {
-        // Verify nonce for security
+        // verify nonce for security
         check_admin_referer('mass_password_reset_action');
 
-        // Clear previous logs
+        // clear previous logs
         delete_transient('mpwr_reset_logs');
         mpwr_debug_log('Mass password reset process started');
 
-        // Get all users with valid emails
+        // get all users with valid emails
         $users = get_users([
             'fields' => ['ID', 'user_email'],
             'number' => '', // Retrieve all users
         ]);
         
-        // Track total users
+        // track total users
         $total_users = count($users);
         mpwr_debug_log("Total users to process: {$total_users}");
         
-        // Dispatch emails to background processor
+        // dispatch emails to background processor
         $processed = 0;
         foreach ($users as $index => $user) {
-            // Validate email before queueing
+            // validate email before queueing
             if (is_email($user->user_email)) {
                 $mass_reset_processor->push_to_queue($user);
                 $processed++;
                 
-                // Log progress every 50 users
+                // log progress every 50 users
                 if ($processed % 50 === 0) {
                     mpwr_debug_log("Queued {$processed} users");
                 }
@@ -115,23 +114,23 @@ function mpwr_display_reset_page() {
             }
         }
 
-        // Dispatch the queue
+        // dispatch the queue
         $mass_reset_processor->save()->dispatch();
         
         mpwr_debug_log("Queued {$processed} out of {$total_users} users");
         
-        // Show success message
+        // show success message
         echo '<div class="notice notice-success"><p>Password reset emails are being processed.</p></div>';
     }
 
-    // Enqueue scripts for live logging
+    // enqueue scripts for live logging
     wp_enqueue_script('mpwr-logs', plugin_dir_url(__FILE__) . 'logs.js', ['jquery'], '1.0', true);
     wp_localize_script('mpwr-logs', 'mpwrAjax', [
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('mpwr_fetch_logs')
     ]);
 
-    // Confirmation page HTML
+    // confirmation page HTML
     ?>
     <div class="wrap">
         <h1>Mass Password Reset</h1>
