@@ -16,16 +16,16 @@ jQuery(document).ready(function($) {
                         $logContainer.append($('<div>').text(log));
                     });
                     
-                    // Auto-scroll to bottom
+                    // auto-scroll to bottom
                     $logContainer.scrollTop($logContainer[0].scrollHeight);
                 }
             }
         });
     }
 
-    // Fetch logs every 5 seconds
+    // fetch logs every 5 seconds
     setInterval(fetchLogs, 5000);
     
-    // Initial fetch
+    // initial fetch
     fetchLogs();
 });
